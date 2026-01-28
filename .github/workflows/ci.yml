@@ -39,9 +39,10 @@ jobs:
           name: app-artifact
           path: app.tar.gz
 
-  deploy:
+  deploy-dev:
     runs-on: ubuntu-latest
     needs: build
+    environment: dev
 
     steps:
       - name: Download Artifact
@@ -54,10 +55,34 @@ jobs:
           tar -xzf app.tar.gz
           ls -R
 
-      - name: Verify deployed code
+      - name: Verify deployed code (DEV)
         run: |
           python - <<EOF
           from build.app1 import add
-          print("Deploy verification (5+3):", add(5, 3))
-          print("Deploy verification (-2+-4):", add(-2, -4))
+          print("DEV verification (5+3):", add(5, 3))
+          print("DEV verification (-2+-4):", add(-2, -4))
+          EOF
+
+  deploy-prod:
+    runs-on: ubuntu-latest
+    needs: deploy-dev
+    environment: prod
+
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-artifact
+
+      - name: Extract Artifact
+        run: |
+          tar -xzf app.tar.gz
+          ls -R
+
+      - name: Verify deployed code (PROD)
+        run: |
+          python - <<EOF
+          from build.app1 import add
+          print("PROD verification (10+20):", add(10, 20))
+          print("PROD verification (-5+-7):", add(-5, -7))
           EOF
