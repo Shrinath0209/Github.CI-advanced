@@ -53,3 +53,24 @@ jobs:
         run: |
           tar -xzf app.tar.gz
           ls -R
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-artifact
+
+      - name: Extract Artifact
+        run: |
+          tar -xzf app.tar.gz
+
+      - name: Verify deployed code
+        run: |
+          python - <<EOF
+          from build.app1 import add
+          print("Deploy verification (5+3):", add(5, 3))
+          print("Deploy verification (-2+-4):", add(-2, -4))
+          EOF
